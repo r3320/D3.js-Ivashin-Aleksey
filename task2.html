@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Graphics</title>
+    <link rel="stylesheet" type="text/css" href="css/dialog-polyfill.css"/>
+    <link rel="stylesheet" href="css/material.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+<dialog class="mdl-dialog">
+    <h4 class="mdl-dialog__title">Задание</h4>
+    <div class="mdl-dialog__content">
+        <p>В этом задании вам нужно поменять числа в массиве таким образом, чтобы итоговая гистограмма совпадала с примером</p>
+        <p>Заметьте вот что. Вы можете, конечно, величину самого большого блока поставить наугад, и он будет точно таким же, как
+        на примере, но при этом он повлияет на масштаб остальных блоков. Будьте внимательны!</p>
+    </div>
+    <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button close">Понятно</button>
+    </div>
+</dialog>
+<div id="compare-result" class="mdl-js-snackbar mdl-snackbar">
+    <div class="mdl-snackbar__text"></div>
+    <button class="mdl-snackbar__action" type="button"></button>
+</div>
+<header>
+    <div class="container">
+        <h6 class="title">D3JS</h6>
+        <button id="btn-theory" class="menu-button mdl-button mdl-js-button mdl-button--icon">
+            <i id="i-theory" class="material-icons md-light">import_contacts</i>
+        </button>
+        <div class="mdl-tooltip" for="btn-theory">
+            Задание
+        </div>
+        <button id="btn-check" onclick="check()" class="menu-button mdl-button mdl-js-button mdl-button--icon">
+            <i id="i-check" class="material-icons md-light">check_circle</i>
+        </button>
+        <div class="mdl-tooltip" for="btn-check">
+            Проверка
+        </div>
+        <button id="btn-next" class="menu-button mdl-button mdl-js-button mdl-button--icon" disabled="disabled" onclick="location.href = './task3.html'">
+            <i id="i-next" class="material-icons md-light md-inactive">forward</i>
+        </button>
+        <div class="mdl-tooltip" for="btn-next">
+            Следующее<br>задание
+        </div>
+    </div>
+</header>
+<main>
+    <div class="half-block left-side">
+        <div class="card card-editor-js">
+            <span class="title">Редактор JavaScript</span>
+            <div id="editor-js"></div>
+        </div>
+    </div>
+    <div class="half-block right-side">
+        <div class="card match">
+            <span class="title">Совпадение данных</span>
+            <div id="bar-match" class="mdl-progress mdl-js-progress"></div>
+        </div>
+        <div class="card sample">
+            <span class="title">Образец</span>
+            <iframe id="sample-frame" frameborder="0" src=""></iframe>
+        </div>
+        <div class="card result">
+            <span class="title">Результат</span>
+            <iframe id="result-frame" frameborder="0" src="">
+
+            </iframe>
+        </div>
+    </div>
+</main>
+<footer>
+</footer>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<script src="js/dialog-polyfill.js"></script>
+<script>
+    var dialog = document.querySelector('dialog');
+    var showDialogButton = document.querySelector('#btn-theory');
+    if (!dialog.showModal) {
+        dialogPolyfill.registerDialog(dialog);
+    }
+    showDialogButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        dialog.showModal();
+    });
+    dialog.querySelector('.close').addEventListener('click', function () {
+        dialog.close();
+    });
+    $(document).ready(function () {
+        dialog.showModal();
+    })
+</script>
+<script src="js/material.min.js"></script>
+<script src="js/html2canvas.js"></script>
+<script src="node_modules/resemblejs/resemble.js"></script>
+<script src="js/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var result_frame = document.getElementById('result-frame');
+    var result_doc = result_frame.contentDocument || result_frame.contentWindow.document;
+
+    var html_code =
+            '<html>\n' +
+            '<head>\n' +
+            '\t<title>Result</title>\n' +
+            '\t<style>\n' +
+            '\t\t.chart div {\n' +
+            '\t\t\tfont: 10px sans-serif;\n' +
+            '\t\t\tbackground-color: steelblue;\n' +
+            '\t\t\ttext-align: right;\n' +
+            '\t\t\tpadding: 3px;\n' +
+            '\t\t\tmargin: 1px;\n' +
+            '\t\t\tcolor: white;\n' +
+            '\t\t}\n' +
+            '\t</style>\n' +
+            '</head>\n' +
+            '<body>\n' +
+            '\t<div class="chart"></div>\n' +
+            '\t<script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"><\/script>\n' +
+            '</body>\n' +
+            '</html>';
+
+    var sample_js =
+            'var data = [4, 8, 15, 16, 23, 42];\n' +
+            '\n' +
+            'var x = d3.scale.linear()\n' +
+            '\t.domain([0, d3.max(data)])\n' +
+            '\t.range([0, 578]);\n' +
+            '\n' +
+            'd3.select(".chart")\n' +
+            '\t.selectAll("div")\n' +
+            '\t.data(data)\n' +
+            '\t.enter().append("div")\n' +
+            '\t.style("width", function(d) { return x(d) + "px"; })\n' +
+            '\t.text(function(d) { return 0; });';
+    var sample_frame = document.getElementById('sample-frame');
+    var sample_doc = sample_frame.contentDocument || sample_frame.contentWindow.document;
+    sample_doc.open();
+    sample_doc.write(html_code + "<script>" + sample_js + "<\/script>");
+    sample_doc.close();
+
+    var editor_js = ace.edit("editor-js");
+    editor_js.setTheme("ace/theme/textmate");
+    editor_js.getSession().setMode("ace/mode/javascript");
+    document.getElementById('editor-js').style.fontSize = "13px";
+    editor_js.setValue(
+            'var data = [5, 8, 13, 21, 34, 18, 22];\n' +
+            '\n' +
+            'var x = d3.scale.linear()\n' +
+            '\t.domain([0, d3.max(data)])\n' +
+            '\t.range([0, 578]);\n' +
+            '\n' +
+            'd3.select(".chart")\n' +
+            '\t.selectAll("div")\n' +
+            '\t.data(data)\n' +
+            '\t.enter().append("div")\n' +
+            '\t.style("width", function(d) { return x(d) + "px"; })\n' +
+            '\t.text(function(d) { return 0; });'
+    );
+    result_doc.open();
+    result_doc.write(html_code + "<script>" + editor_js.getValue() + "<\/script>");
+    result_doc.close();
+
+    editor_js.getSession().on('change', function () {
+        result_doc.open();
+        result_doc.write(html_code + "<script>" + editor_js.getValue() + "<\/script>");
+        result_doc.close();
+    });
+
+    var sample_canvas;
+    var result_canvas;
+    var bar_match;
+
+    document.querySelector('#bar-match').addEventListener('mdl-componentupgraded', function () {
+        bar_match = this;
+    });
+
+    function check() {
+        bar_match.MaterialProgress.setProgress(0);
+        var load_count;
+        var sample_image, result_image;
+        html2canvas(sample_doc.body, {
+            onrendered: function (s_canvas) {
+                sample_canvas = s_canvas;
+                html2canvas(result_doc.body, {
+                    onrendered: function (r_canvas) {
+                        result_canvas = r_canvas;
+                        var sample_string = sample_canvas.toDataURL("image/jpeg", 1.0);
+                        var result_string = result_canvas.toDataURL("image/jpeg", 1.0);
+                        resemble(sample_string).compareTo(result_string).onComplete(function (data) {
+                            console.log(data);
+                            var snackbarContainer = document.querySelector('#compare-result');
+                            var text_data;
+                            var masmatch_percentage = data.rawMisMatchPercentage;
+                            if (masmatch_percentage == 0) {
+                                text_data = {message: "Данные идентичны. Можете переходить к следующему заданию"};
+                                $("#btn-next").prop("disabled", false);
+                                $("#i-next").removeClass("md-inactive");
+                            } else {
+                                text_data = {message: "Данные не совпадают. Попорбуйте еще раз"};
+                            }
+                            snackbarContainer.MaterialSnackbar.showSnackbar(text_data);
+                            bar_match.MaterialProgress.setProgress(Math.floor(100 - masmatch_percentage));
+                            $(".card.match .title").text("Совпадение данных: " + Math.floor(100 - masmatch_percentage) + "%");
+                        });
+
+                    }
+                });
+            }
+        });
+    }
+</script>
+</body>
+</html>
